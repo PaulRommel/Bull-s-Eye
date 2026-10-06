@@ -9,8 +9,10 @@ import UIKit
 
 final class ViewController: UIViewController {
     
-    var currentValue: Int = 0
+    var currentValue = 0
     var targetValue = 0
+    var score = 0
+    var round = 0
     
     //MARK: - Кнопка Hit Me!
     
@@ -156,7 +158,12 @@ final class ViewController: UIViewController {
     // MARK: - Действия
     
     private func showAlert() {
-        let message = "The value of the slider is: \(currentValue)" + "\n The target value is: \(targetValue)"
+        let difference = abs(targetValue - currentValue)
+        let points = 100 - difference
+        
+        score += points
+            
+        let message = "You scored \(points) points"
         
         let alert = UIAlertController(
             title: "Hello, World",
@@ -176,18 +183,18 @@ final class ViewController: UIViewController {
     }
     
     private func startNewRound() {
-        // начальное значение — из положения слайдера
+        round += 1
         currentValue = 50
-        // целевое значение
         targetValue = Int.random(in: 1...100)
         slider.value = Float(currentValue)
         
-        // Вызов метода
         updateLabels()
     }
     
     private func updateLabels() {
         targetLabel.text = String(targetValue)
+        scoreValueLabel.text = String(score)
+        roundValueLabel.text = String(round)
     }
 }
 

@@ -9,8 +9,10 @@ import UIKit
 
 final class ViewController: UIViewController {
     
-    var currentValue: Int = 0
+    var currentValue = 0
     var targetValue = 0
+    var score = 0
+    var round = 0
     
     //MARK: - Кнопка Hit Me!
     
@@ -84,8 +86,7 @@ final class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        // Вызов метода генерации случайных чисел
-        startNewRound()
+        startNewGame()
         
         [promptStack, sliderStack, actionButton, statsStack].forEach(view.addSubview)
         
@@ -127,6 +128,11 @@ final class ViewController: UIViewController {
         actionButton.addAction(UIAction { [weak self] _ in
             self?.showAlert()
         }, for: .touchUpInside)
+        
+        // кнопка Start Over -> новая игра
+        startOverButton.addAction(UIAction { [weak self] _ in
+            self?.startNewGame()
+        }, for: .touchUpInside)
     }
     
     // MARK: - Фабрики
@@ -156,10 +162,30 @@ final class ViewController: UIViewController {
     // MARK: - Действия
     
     private func showAlert() {
-        let message = "The value of the slider is: \(currentValue)" + "\n The target value is: \(targetValue)"
+        let difference = abs(targetValue - currentValue)
+        var points = 100 - difference
+        
+        let title: String
+        if difference == 0 {
+            title = "Perfect!"
+            points += 100
+        } else if difference < 5 {
+            title = "You almost had it!"
+            if difference == 1 {
+                points += 50
+            }
+        } else if difference < 10 {
+            title = "Pretty good!"
+        } else {
+            title = "Not even close..."
+        }
+        
+        score += points
+        
+        let message = "You scored \(points) points"
         
         let alert = UIAlertController(
-            title: "Hello, World",
+            title: title,
             message: message,
             preferredStyle: .alert
         )
@@ -176,18 +202,24 @@ final class ViewController: UIViewController {
     }
     
     private func startNewRound() {
-        // начальное значение — из положения слайдера
+        round += 1
         currentValue = 50
-        // целевое значение
         targetValue = Int.random(in: 1...100)
         slider.value = Float(currentValue)
         
-        // Вызов метода
         updateLabels()
     }
     
     private func updateLabels() {
         targetLabel.text = String(targetValue)
+        scoreValueLabel.text = String(score)
+        roundValueLabel.text = String(round)
+    }
+    
+    private func startNewGame() {
+        score = 0
+        round = 0
+        startNewRound()
     }
 }
 

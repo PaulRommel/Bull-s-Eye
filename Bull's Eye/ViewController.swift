@@ -10,6 +10,7 @@ import UIKit
 final class ViewController: UIViewController {
     
     var currentValue: Int = 0
+    var targetValue = 0
     
     //MARK: - Кнопка Hit Me!
     
@@ -83,6 +84,9 @@ final class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
+        // Вызов метода генерации случайных чисел
+        startNewRound()
+        
         [promptStack, sliderStack, actionButton, statsStack].forEach(view.addSubview)
         
         let safeArea = view.safeAreaLayoutGuide
@@ -112,9 +116,6 @@ final class ViewController: UIViewController {
             statsStack.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
             statsStack.topAnchor.constraint(greaterThanOrEqualTo: actionButton.bottomAnchor, constant: 24)
         ])
-        
-        // начальное значение — из положения слайдера
-        currentValue = lroundf(slider.value)
         
         // слайдер → обновляем currentValue
         slider.addAction(UIAction { [weak self] action in
@@ -155,7 +156,7 @@ final class ViewController: UIViewController {
     // MARK: - Действия
     
     private func showAlert() {
-        let message = "The value of the slider is: \(currentValue)"
+        let message = "The value of the slider is: \(currentValue)" + "\n The target value is: \(targetValue)"
         
         let alert = UIAlertController(
             title: "Hello, World",
@@ -163,13 +164,30 @@ final class ViewController: UIViewController {
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            self?.startNewRound()
+        })
         present(alert, animated: true, completion: nil)
         print("The value of the slider is now: \(slider.value)")
     }
     
     private func sliderMoved(_ slider: UISlider) {
         currentValue = lroundf(slider.value)
+    }
+    
+    private func startNewRound() {
+        // начальное значение — из положения слайдера
+        currentValue = 50
+        // целевое значение
+        targetValue = Int.random(in: 1...100)
+        slider.value = Float(currentValue)
+        
+        // Вызов метода
+        updateLabels()
+    }
+    
+    private func updateLabels() {
+        targetLabel.text = String(targetValue)
     }
 }
 

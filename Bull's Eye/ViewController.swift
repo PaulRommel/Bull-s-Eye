@@ -220,6 +220,7 @@ final class ViewController: UIViewController {
         score = 0
         round = 0
         startNewRound()
+        //
     }
 }
 

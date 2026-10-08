@@ -14,24 +14,39 @@ final class ViewController: UIViewController {
     var score = 0
     var round = 0
     
-    //MARK: - Кнопка Hit Me!
+    private static let fontName = "ArialRoundedMTBold"
     
-    private lazy var actionButton: UIButton = {
-        var config = UIButton.Configuration.plain()
-        config.title = "Hit Me!"
-        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20)
-        
-        let button = UIButton(configuration: config)
+    // MARK: - Фон
+    
+    private let backgroundImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "Background"))
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    // MARK: - Кнопка Hit Me!
+    
+    private let actionButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setTitle("Hit Me!", for: .normal)
+        button.titleLabel?.font = UIFont(name: ViewController.fontName, size: 20)
+        button.setTitleColor(UIColor(white: 0.2, alpha: 1), for: .normal)
+        button.setTitleShadowColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
+        button.titleLabel?.shadowOffset = CGSize(width: 0, height: 1)
+        button.setBackgroundImage(UIImage(named: "Button-Normal"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "Button-Highlighted"), for: .highlighted)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    //MARK: - Ряд 1: два лейбла
+    // MARK: - Ряд 1: два лейбла
     
     private let promptLabel = ViewController.makeLabel("Put the Bull's Eye as close as you can to:")
-    private let targetLabel = ViewController.makeLabel("100", weight: .bold)
+    private let targetLabel = ViewController.makeLabel("100", size: 20)
     
-    //MARK: - Ряд 2: лейбл - слайдер - лейбл
+    // MARK: - Ряд 2: лейбл - слайдер - лейбл
     
     private let minLabel = ViewController.makeLabel("1")
     private let maxLabel = ViewController.makeLabel("100")
@@ -42,25 +57,34 @@ final class ViewController: UIViewController {
         slider.maximumValue = 100
         slider.value = 50
         slider.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        
+        // бегунок
+        slider.setThumbImage(UIImage(named: "SliderThumb-Normal"), for: .normal)
+        slider.setThumbImage(UIImage(named: "SliderThumb-Highlighted"), for: .highlighted)
+        
+        // дорожка — растягиваемые картинки, края по 14 pt не тянутся
+        let insets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
+        if let left = UIImage(named: "SliderTrackLeft") {
+            slider.setMinimumTrackImage(left.resizableImage(withCapInsets: insets), for: .normal)
+        }
+        if let right = UIImage(named: "SliderTrackRight") {
+            slider.setMaximumTrackImage(right.resizableImage(withCapInsets: insets), for: .normal)
+        }
         return slider
     }()
     
-    //MARK: - Ряд 3: кнопка, 2 пары лейблов, кнопка
+    // MARK: - Ряд 3: кнопка, 2 пары лейблов, кнопка
     
-    private let startOverButton: UIButton = {
-        var config = UIButton.Configuration.plain()
-        config.title = "Start Over"
-        return UIButton(configuration: config)
-    }()
+    private let startOverButton = ViewController.makeSmallButton(icon: "StartOverIcon")
     
-    private let scoreTitleLabel = ViewController.makeLabel("Score:", size: 15)
-    private let scoreValueLabel = ViewController.makeLabel("0", size: 15, weight: .semibold)
-    private let roundTitleLabel = ViewController.makeLabel("Round:", size: 15)
-    private let roundValueLabel = ViewController.makeLabel("1", size: 15, weight: .semibold)
+    private let scoreTitleLabel = ViewController.makeLabel("Score:")
+    private let scoreValueLabel = ViewController.makeLabel("0", size: 20)
+    private let roundTitleLabel = ViewController.makeLabel("Round:")
+    private let roundValueLabel = ViewController.makeLabel("1", size: 20)
     
-    private let infoButton = UIButton(type: .infoLight)
+    private let infoButton = ViewController.makeSmallButton(icon: "InfoButton")
     
-    //MARK: - Стеки
+    // MARK: - Стеки
     
     private lazy var promptStack = ViewController.makeHStack(
         [promptLabel, targetLabel], spacing: 8)
@@ -82,18 +106,25 @@ final class ViewController: UIViewController {
     
     // MARK: - Жизненный цикл
     
+    override var prefersStatusBarHidden: Bool { true }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
         
-        startNewGame()
-        
+        // фон — первым, чтобы оказался под всеми элементами
+        view.addSubview(backgroundImageView)
         [promptStack, sliderStack, actionButton, statsStack].forEach(view.addSubview)
         
         let safeArea = view.safeAreaLayoutGuide
         let margins = view.layoutMarginsGuide
         
         NSLayoutConstraint.activate([
+            // фон — на весь экран
+            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
             // ряд 1 — у верха экрана
             promptStack.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 20),
             promptStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -105,11 +136,18 @@ final class ViewController: UIViewController {
             sliderStack.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
             sliderStack.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
             
-            // кнопка — по центру экрана, но не ближе 24 pt к слайдеру
+            // кнопка — по центру экрана, размер картинки 100×37
             actionButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             actionButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             actionButton.topAnchor.constraint(greaterThanOrEqualTo: sliderStack.bottomAnchor, constant: 24),
-            actionButton.heightAnchor.constraint(equalToConstant: 50),
+            actionButton.widthAnchor.constraint(equalToConstant: 100),
+            actionButton.heightAnchor.constraint(equalToConstant: 37),
+            
+            // маленькие кнопки — 32×32
+            startOverButton.widthAnchor.constraint(equalToConstant: 32),
+            startOverButton.heightAnchor.constraint(equalToConstant: 32),
+            infoButton.widthAnchor.constraint(equalToConstant: 32),
+            infoButton.heightAnchor.constraint(equalToConstant: 32),
             
             // ряд 3 — прижат к низу экрана
             statsStack.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -20),
@@ -129,22 +167,42 @@ final class ViewController: UIViewController {
             self?.showAlert()
         }, for: .touchUpInside)
         
-        // кнопка Start Over -> новая игра
+        // кнопка Start Over → новая игра
         startOverButton.addAction(UIAction { [weak self] _ in
             self?.startNewGame()
         }, for: .touchUpInside)
+        
+        // кнопка info → экран About
+        infoButton.addAction(UIAction { [weak self] _ in
+            let aboutVC = AboutViewController()
+            aboutVC.modalPresentationStyle = .fullScreen
+            aboutVC.modalTransitionStyle = .flipHorizontal
+            self?.present(aboutVC, animated: true)
+        }, for: .touchUpInside)
+        
+        startNewGame()
     }
     
     // MARK: - Фабрики
     
-    private static func makeLabel(_ text: String,
-                                  size: CGFloat = 17,
-                                  weight: UIFont.Weight = .regular) -> UILabel {
+    private static func makeLabel(_ text: String, size: CGFloat = 16) -> UILabel {
         let label = UILabel()
         label.text = text
-        label.font = .systemFont(ofSize: size, weight: weight)
-        label.textColor = .label
+        label.font = UIFont(name: fontName, size: size) ?? .boldSystemFont(ofSize: size)
+        label.textColor = .white
+        
+        // тень, как в книге: чёрная 50 %, смещение вниз на 1 pt
+        label.shadowColor = UIColor.black.withAlphaComponent(0.5)
+        label.shadowOffset = CGSize(width: 0, height: 1)
         return label
+    }
+    
+    private static func makeSmallButton(icon: String) -> UIButton {
+        let button = UIButton(type: .custom)
+        button.setBackgroundImage(UIImage(named: "SmallButton"), for: .normal)
+        button.setImage(UIImage(named: icon), for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }
     
     private static func makeHStack(_ views: [UIView],
@@ -182,19 +240,16 @@ final class ViewController: UIViewController {
         
         score += points
         
-        let message = "You scored \(points) points"
-        
         let alert = UIAlertController(
             title: title,
-            message: message,
+            message: "You scored \(points) points",
             preferredStyle: .alert
         )
         
         alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
             self?.startNewRound()
         })
-        present(alert, animated: true, completion: nil)
-        print("The value of the slider is now: \(slider.value)")
+        present(alert, animated: true)
     }
     
     private func sliderMoved(_ slider: UISlider) {
@@ -206,7 +261,6 @@ final class ViewController: UIViewController {
         currentValue = 50
         targetValue = Int.random(in: 1...100)
         slider.value = Float(currentValue)
-        
         updateLabels()
     }
     
@@ -222,4 +276,3 @@ final class ViewController: UIViewController {
         startNewRound()
     }
 }
-

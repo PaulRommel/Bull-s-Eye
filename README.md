@@ -5,9 +5,8 @@
 Учебный проект по книге UIKit Apprentice (Fahim Farook, Kodeco). Всё сделано на UIKit, а интерфейс свёрстан полностью кодом, без Storyboard и Interface Builder.
 
 Демо
-<!-- Перетащите сюда видео .mp4 в редакторе GitHub — ссылка подставится автоматически 
 
- -->
+https://github.com/user-attachments/assets/896c6ff6-a4b5-430e-8039-add364bf1945
 
 Возможности
 Случайное целевое число в каждом раунде
